@@ -1,0 +1,1 @@
+{"name":"stackrank-review-bench","version":"1.0.0","private":true,"license":"MIT","type":"module","scripts":{"test":"node --test test/"},"dependencies":{"express":"^4.19.2","better-sqlite3":"^11.0.0"}}

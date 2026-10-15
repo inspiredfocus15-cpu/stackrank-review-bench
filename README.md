@@ -1,2 +1,2 @@
 # stackrank-review-bench
-Fixed fixture for StackRank's AI code review test (round 1).
+A tiny notes API (Express + SQLite) used as a fixed fixture for StackRank's AI code review test.
