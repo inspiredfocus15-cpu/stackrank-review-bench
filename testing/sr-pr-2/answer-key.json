@@ -1,0 +1,22 @@
+{
+  "protocol": "SR-PR-2",
+  "fixture": "inspiredfocus15-cpu/stackrank-review-bench PR #1 (feature/search-and-export), head 6f59362",
+  "written": "2026-11-08, from the diff only, before reading any tool's review comments",
+  "scoring_rule": "A bug counts as caught when a review comment points at the right file and code location (or the clearly affected line range) AND states the actual problem or its concrete consequence. Vague style remarks do not count. One comment can catch at most one bug unless it names each separately.",
+  "bugs": [
+    {"id": "BUG1", "file": "src/notes.js", "where": "listNotes offset", "problem": "Pagination off by one: offset = page * PAGE_SIZE skips the first page (page 1 returns rows 21-40).", "accept": ["off-by-one", "skips first page", "should be (page - 1) * PAGE_SIZE"]},
+    {"id": "BUG2", "file": "src/app.js", "where": "POST /notes validation", "problem": "Missing title/body returns HTTP 200 instead of 400, so clients treat a failed create as success.", "accept": ["wrong status code", "should be 400"]},
+    {"id": "BUG3", "file": "src/notes.js", "where": "searchNotes", "problem": "SQL injection: owner and q are interpolated into the SQL string instead of bound parameters.", "accept": ["SQL injection", "use parameterized query / placeholders"]},
+    {"id": "BUG4", "file": "src/app.js", "where": "GET /notes/:id/export log line", "problem": "Logs the Authorization header, leaking credentials/tokens into logs.", "accept": ["logs auth header", "credential/token leak in logs"]},
+    {"id": "BUG5", "file": "src/app.js", "where": "DELETE /admin/users/:owner/notes", "problem": "Missing requireAdmin: any authenticated user can delete another user's notes.", "accept": ["missing admin check", "authorization bypass", "add requireAdmin"]},
+    {"id": "BUG6", "file": "src/export.js", "where": "exportNote: renderMarkdown(note)", "problem": "Async renderMarkdown is not awaited, so markdown is a Promise and the download contains [object Promise].", "accept": ["missing await", "returns a Promise"]},
+    {"id": "BUG7", "file": "src/rate.js", "where": "bumpExportCount", "problem": "Race condition: reads the count, awaits persist, then writes current + 1, so concurrent exports lose increments.", "accept": ["race condition", "lost update", "read-modify-write across await", "non-atomic increment"]},
+    {"id": "BUG8", "file": "src/export.js", "where": "exportNote: note.title", "problem": "No not-found handling: getNote returns null/undefined for a missing or other user's note, so note.title throws (500 / unhandled rejection) instead of 404.", "accept": ["null/undefined note", "missing 404 handling", "crash on missing note"]}
+  ],
+  "valid_extra_findings_not_scored": [
+    {"file": "src/export.js", "where": "filename from title", "problem": "Unsanitized title used as download filename (quotes, newlines, path characters). Real issue, but not one of the 8 scored bugs; it is not counted as a false positive."},
+    {"file": "src/app.js", "where": "async export route", "problem": "Express 4 does not catch rejected promises from async handlers. Counts toward BUG8 only if tied to the missing note."}
+  ],
+  "not_bugs": ["express.json size limit", "test renamed", "README endpoint list", "log helper itself"],
+  "false_positive_rule": "A comment that claims a defect that is not real counts as one false positive. Style or naming suggestions are recorded as noise, not false positives."
+}
