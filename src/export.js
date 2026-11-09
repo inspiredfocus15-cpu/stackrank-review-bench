@@ -6,7 +6,8 @@ async function renderMarkdown(note) {
 
 export async function exportNote(owner, id) {
   const note = getNote(owner, id);
+  if (!note) return null;
   const title = note.title.trim();
-  const markdown = renderMarkdown(note);
+  const markdown = await renderMarkdown(note);
   return { filename: `${title}.md`, markdown };
 }

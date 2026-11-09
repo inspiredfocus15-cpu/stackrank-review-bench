@@ -29,7 +29,7 @@ app.get('/notes/:id', authenticate, (req, res) => {
 
 app.post('/notes', authenticate, (req, res) => {
   const { title, body } = req.body || {};
-  if (!title || !body) return res.status(200).json({ error: 'title and body required' });
+  if (!title || !body) return res.status(400).json({ error: 'title and body required' });
   res.status(201).json(createNote(req.user.user, { title, body }));
 });
 
@@ -39,13 +39,14 @@ app.delete('/notes/:id', authenticate, (req, res) => {
 });
 
 app.get('/notes/:id/export', authenticate, async (req, res) => {
-  log('export', req.params.id, 'auth=', req.get('authorization'));
+  log('export', req.params.id, 'user=', req.user.user);
   const out = await exportNote(req.user.user, Number(req.params.id));
+  if (!out) return res.status(404).json({ error: 'not found' });
   await bumpExportCount(req.user.user, async () => {});
   res.type('text/markdown').attachment(out.filename).send(out.markdown);
 });
 
-app.delete('/admin/users/:owner/notes', authenticate, (req, res) => {
+app.delete('/admin/users/:owner/notes', authenticate, requireAdmin, (req, res) => {
   res.json({ deleted: purgeOwner(req.params.owner) });
 });
 

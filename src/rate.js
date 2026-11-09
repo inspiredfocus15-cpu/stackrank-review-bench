@@ -2,10 +2,10 @@
 const counts = new Map();
 
 export async function bumpExportCount(user, persist) {
-  const current = counts.get(user) || 0;
-  await persist(user, current + 1);
-  counts.set(user, current + 1);
-  return current + 1;
+  const next = (counts.get(user) || 0) + 1;
+  counts.set(user, next);
+  await persist(user, next);
+  return next;
 }
 
 export const exportCount = (user) => counts.get(user) || 0;
